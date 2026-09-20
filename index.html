@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Status Center — Load Tracking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-card" id="login-card">
+    <h1><span class="live-dot"></span>Status Center</h1>
+    <div class="sub" id="login-sub">Sign in to your team's workspace.</div>
+
+    <!-- STEP: sign in with org code + username/password -->
+    <div id="step-login">
+      <div class="field">
+        <label for="lg-org">Organization code</label>
+        <input id="lg-org" class="mono" placeholder="e.g. acme-logistics" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="lg-user">Username</label>
+        <input id="lg-user" autocomplete="username" placeholder="e.g. updater1">
+      </div>
+      <div class="field">
+        <label for="lg-pass">Password</label>
+        <input id="lg-pass" type="password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button class="primary" id="login-btn">Sign in</button>
+      <div class="login-error" id="login-error"></div>
+      <div class="switch-mode">
+        New here? <button id="show-signup-btn" type="button">Create a workspace</button> ·
+        <button id="show-join-btn" type="button">Join an existing one</button>
+      </div>
+    </div>
+
+    <!-- STEP: create a brand-new org (first user becomes manager) -->
+    <div id="step-signup" class="hidden">
+      <div class="field">
+        <label for="su-orgname">Organization name</label>
+        <input id="su-orgname" placeholder="e.g. Acme Logistics">
+      </div>
+      <div class="field">
+        <label for="su-orgcode">Organization code</label>
+        <input id="su-orgcode" class="mono" placeholder="e.g. acme-logistics" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="su-name">Your name</label>
+        <input id="su-name" placeholder="Full name">
+      </div>
+      <div class="field">
+        <label for="su-user">Username</label>
+        <input id="su-user" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="su-pass">Password</label>
+        <input id="su-pass" type="password" autocomplete="new-password" placeholder="At least 6 characters">
+      </div>
+      <button class="primary" id="signup-btn">Create workspace &amp; sign in</button>
+      <div class="login-error" id="signup-error"></div>
+      <div class="switch-mode"><button id="back-to-login-1" type="button">Back to sign in</button></div>
+    </div>
+
+    <!-- STEP: join an existing org as an updater -->
+    <div id="step-join" class="hidden">
+      <div class="field">
+        <label for="jo-orgcode">Organization code</label>
+        <input id="jo-orgcode" class="mono" placeholder="e.g. acme-logistics" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="jo-name">Your name</label>
+        <input id="jo-name" placeholder="Full name">
+      </div>
+      <div class="field">
+        <label for="jo-user">Choose a username</label>
+        <input id="jo-user" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="jo-pass">Choose a password</label>
+        <input id="jo-pass" type="password" autocomplete="new-password" placeholder="At least 6 characters">
+      </div>
+      <button class="primary" id="join-btn">Join workspace &amp; sign in</button>
+      <div class="login-error" id="join-error"></div>
+      <div class="switch-mode"><button id="back-to-login-2" type="button">Back to sign in</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="wrap hidden" id="app">
+  <header class="top">
+    <div class="brand">
+      <h1><span class="live-dot"></span>Status Center</h1>
+      <div class="org-name" id="app-org-name"></div>
+    </div>
+    <div class="who">
+      <span class="day-stat" id="day-stat"></span>
+      <span><span class="name" id="who-name"></span> <span class="role-tag" id="who-role"></span></span>
+      <button class="theme-toggle" id="theme-toggle">🌙 Dark</button>
+      <button class="logout-btn" id="logout-btn">Sign out</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="board" class="active">Board</button>
+    <button data-tab="database" id="tab-database" class="hidden">Database</button>
+    <button data-tab="users" id="tab-users" class="hidden">Users</button>
+  </nav>
+
+  <!-- BOARD TAB -->
+  <section id="panel-board">
+    <div class="entry">
+      <h2>QUICK UPDATE</h2>
+      <div class="entry-grid">
+        <div class="field">
+          <label for="f-id">Load ID</label>
+          <input id="f-id" list="id-list" class="mono" placeholder="e.g. LD-1042" autocomplete="off">
+          <datalist id="id-list"></datalist>
+        </div>
+        <div class="field">
+          <label for="f-carrier">Carrier</label>
+          <input id="f-carrier" placeholder="Company / driver">
+        </div>
+        <div class="field">
+          <label for="f-origin">Origin state</label>
+          <select id="f-origin"></select>
+        </div>
+        <div class="field">
+          <label for="f-dest">Destination state</label>
+          <select id="f-dest"></select>
+        </div>
+        <div class="field">
+          <label for="f-eta">ETA</label>
+          <input id="f-eta" type="datetime-local">
+        </div>
+        <div class="status-pills" id="status-pills"></div>
+        <div class="field wide">
+          <label for="f-note">Note</label>
+          <textarea id="f-note" rows="1" placeholder="Short note — e.g. waiting on paperwork, stopped for fuel..."></textarea>
+        </div>
+        <div class="quick-chips" id="quick-chips"></div>
+        <div class="drv-link-row">
+          <button type="button" class="wa-btn" id="wa-btn">Forward via WhatsApp</button>
+          <button type="button" id="drv-link-btn">Copy driver update link for this Load ID</button>
+        </div>
+        <div class="entry-actions">
+          <div class="hint" id="mode-hint">Enter a new Load ID or pick an existing one</div>
+          <button class="primary" id="submit-btn">Update</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="stale-banner-slot"></div>
+    <div id="alert-banner-slot"></div>
+
+    <div class="toolbar">
+      <div class="search"><input id="search" placeholder="Search by load ID or carrier..."></div>
+      <div class="right">
+        <button class="linklike" id="seed-btn">Load sample data</button>
+        <button class="linklike" id="clear-btn">Clear board (keeps Database)</button>
+        <div class="count" id="total-count"></div>
+      </div>
+    </div>
+
+    <div class="status-msg" id="status-msg">Loading...</div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <!-- DATABASE TAB -->
+  <section id="panel-database" class="hidden">
+    <div class="toolbar">
+      <div class="search"><input id="db-search" placeholder="Search records..."></div>
+      <div class="right">
+        <button class="linklike" id="export-btn">Export CSV</button>
+        <div class="count" id="db-count"></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-col="id">Load ID</th>
+            <th data-col="carrier">Carrier</th>
+            <th data-col="origin">Origin</th>
+            <th data-col="destination">Destination</th>
+            <th data-col="status">Status</th>
+            <th data-col="archived">State</th>
+            <th data-col="eta">ETA</th>
+            <th data-col="note">Note</th>
+            <th data-col="updated_by">Updated By</th>
+            <th data-col="updated_at">Last Updated</th>
+          </tr>
+        </thead>
+        <tbody id="db-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- USERS TAB -->
+  <section id="panel-users" class="hidden">
+    <div class="users-grid">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Username</th><th>Name</th><th>Role</th><th></th></tr></thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+      <div class="add-user-card">
+        <h2>ADD PEOPLE TO THIS WORKSPACE</h2>
+        <p style="font-size:0.82rem; color:var(--ink-soft); line-height:1.5;">
+          New team members create their own account on the login screen using
+          <b>"Join an existing one"</b> and this organization code:
+        </p>
+        <div class="field"><input class="mono" readonly id="org-code-display"></div>
+        <div class="demo-hint">
+          <b>Dispatch WhatsApp number</b> — updaters can forward a load's status here with one tap.
+          <div class="field" style="margin-top:8px;">
+            <input id="dispatch-phone" placeholder="e.g. +14155551234">
+          </div>
+          <button class="primary" id="save-phone-btn" style="margin-top:6px;">Save number</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- HISTORY MODAL -->
+<div class="modal-overlay hidden" id="hist-modal">
+  <div class="modal">
+    <button class="close-x" id="hist-close">×</button>
+    <h3 id="hist-title"></h3>
+    <div class="modal-sub">Full update history for this load</div>
+    <div id="hist-list"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
